@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Agrícola Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #2e7d32; --secondary: #1565c0; --accent: #f57c00; --bg: #f0f2f5; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .header { background: var(--primary); color: white; padding: 1rem; border-radius: 8px; margin-bottom: 20px; text-align: center; }
+        
+        /* Grid para KPIs rápidos */
+        .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .kpi-card { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid var(--primary); }
+        .kpi-card h3 { margin: 0; font-size: 0.85rem; color: #666; text-transform: uppercase; }
+        .kpi-card p { margin: 5px 0 0; font-size: 1.4rem; font-weight: bold; color: #333; }
+
+        /* Grid para Gráficas */
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; }
+        .chart-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h2 { font-size: 1.1rem; color: var(--primary); margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        
+        @media (max-width: 600px) { .charts-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Sistema de Monitoreo Agrícola</h1>
+        <p id="location-label">Cargando datos de las próximas 24 horas...</p>
+    </div>
+
+    <div class="kpi-container" id="kpis">
+        </div>
+
+    <div class="charts-grid">
+        <div class="chart-card">
+            <h2>Temperaturas y Punto de Rocío</h2>
+            <canvas id="chartTemp"></canvas>
+        </div>
+
+        <div class="chart-card">
+            <h2>Humedad y Precipitación</h2>
+            <canvas id="chartWater"></canvas>
+        </div>
+
+        <div class="chart-card">
+            <h2>Dinámica del Viento (10m)</h2>
+            <canvas id="chartWind"></canvas>
+        </div>
+
+        <div class="chart-card">
+            <h2>Atmósfera (Presión y Visibilidad)</h2>
+            <canvas id="chartAtmos"></canvas>
+        </div>
+
+        <div class="chart-card">
+            <h2>Cobertura de Nubes (%)</h2>
+            <canvas id="chartClouds"></canvas>
+        </div>
+
+        <div class="chart-card">
+            <h2>Déficit de Presión de Vapor (VPD)</h2>
+            <canvas id="chartVPD"></canvas>
+        </div>
+    </div>
+
+    <script>
+        async function updateDashboard() {
+            const res = await fetch('/api/clima');
+            const data = await res.json();
+            const latest = data[0]; // Datos más recientes
+            const labels = data.map(d => d.date.split(' ')[1].substring(0,5));
+
+            // 1. Llenar KPIs
+            const kpiBox = document.getElementById('kpis');
+            const kpiItems = [
+                { label: "Temp Actual", val: latest.temperature_2m + "°C" },
+                { label: "Prob. Lluvia", val: latest.precipitation_probability + "%" },
+                { label: "Evapotransp.", val: latest.et0_fao_evapotranspiration + " mm" },
+                { label: "Humedad Rel.", val: latest.relative_humidity_2m + "%" },
+                { label: "Viento", val: latest.wind_speed_10m + " km/h" },
+                { label: "VPD (Estrés)", val: latest.vapor_pressure_deficit + " kPa" }
+            ];
+            kpiBox.innerHTML = kpiItems.map(item => `
+                <div class="kpi-card">
+                    <h3>${item.label}</h3>
+                    <p>${item.val}</p>
+                </div>
+            `).join('');
+
+            const commonOptions = { responsive: true, scales: { y: { beginAtZero: false } } };
+
+            // --- GRÁFICA 1: TEMPERATURAS ---
+            new Chart(document.getElementById('chartTemp'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Temp 2m', data: data.map(d => d.temperature_2m), borderColor: '#f44336', tension: 0.3 },
+                        { label: 'Aparente', data: data.map(d => d.apparent_temperature), borderColor: '#ff9800', borderDash: [5,5] },
+                        { label: 'Punto Rocío', data: data.map(d => d.dewpoint_2m), borderColor: '#3f51b5' }
+                    ]
+                }, options: commonOptions
+            });
+
+            // --- GRÁFICA 2: AGUA ---
+            new Chart(document.getElementById('chartWater'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Precipitación (mm)', data: data.map(d => d.precipitation), backgroundColor: '#2196f3' },
+                        { label: 'ET0 (mm)', data: data.map(d => d.et0_fao_evapotranspiration), backgroundColor: '#4caf50' }
+                    ]
+                }, options: commonOptions
+            });
+
+            // --- GRÁFICA 3: VIENTO ---
+            new Chart(document.getElementById('chartWind'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Velocidad', data: data.map(d => d.wind_speed_10m), borderColor: '#009688', fill: true },
+                        { label: 'Ráfagas', data: data.map(d => d.wind_gusts_10m), borderColor: '#ff5722' }
+                    ]
+                }, options: commonOptions
+            });
+
+            // --- GRÁFICA 4: PRESIÓN ---
+            new Chart(document.getElementById('chartAtmos'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Presión Superficie (hPa)', data: data.map(d => d.surface_pressure), borderColor: '#795548', yAxisID: 'y' },
+                        { label: 'Visibilidad (m)', data: data.map(d => d.visibility), borderColor: '#9e9e9e', yAxisID: 'y1' }
+                    ]
+                },
+                options: { 
+                    scales: { 
+                        y: { position: 'left' }, 
+                        y1: { position: 'right', grid: { drawOnChartArea: false } } 
+                    } 
+                }
+            });
+
+            // --- GRÁFICA 5: NUBES ---
+            new Chart(document.getElementById('chartClouds'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'Cobertura Total %', data: data.map(d => d.cloud_cover), borderColor: '#607d8b', fill: true }]
+                }, options: commonOptions
+            });
+
+            // --- GRÁFICA 6: VPD (ESTRÉS) ---
+            new Chart(document.getElementById('chartVPD'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{ 
+                        label: 'VPD (kPa)', 
+                        data: data.map(d => d.vapor_pressure_deficit), 
+                        borderColor: '#9c27b0', 
+                        backgroundColor: 'rgba(156, 39, 176, 0.2)',
+                        fill: true 
+                    }]
+                }, options: commonOptions
+            });
+        }
+
+        updateDashboard();
+    </script>
+</body>
+</html>
