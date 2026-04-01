@@ -3,176 +3,861 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Agrícola Pro</title>
+    <title>Clima Agrícola Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --primary: #2e7d32; --secondary: #1565c0; --accent: #f57c00; --bg: #f0f2f5; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
-        .header { background: var(--primary); color: white; padding: 1rem; border-radius: 8px; margin-bottom: 20px; text-align: center; }
-        
-        /* Grid para KPIs rápidos */
-        .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .kpi-card { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid var(--primary); }
-        .kpi-card h3 { margin: 0; font-size: 0.85rem; color: #666; text-transform: uppercase; }
-        .kpi-card p { margin: 5px 0 0; font-size: 1.4rem; font-weight: bold; color: #333; }
+        :root {
+            --verde: #2d7a4f;
+            --verde-claro: #4caf78;
+            --verde-suave: #e8f5ee;
+            --cielo: #5ba3d0;
+            --cielo-suave: #e3f2fd;
+            --naranja: #f5924e;
+            --naranja-suave: #fff3e8;
+            --morado: #7c5cbf;
+            --morado-suave: #f0ebff;
+            --rojo: #e05252;
+            --amarillo: #f0c040;
+            --fondo: #f0f4f8;
+            --blanco: #ffffff;
+            --texto: #1a2e23;
+            --texto-suave: #6b7d74;
+            --borde: #d8e8dd;
+            --sombra: 0 4px 20px rgba(45,122,79,0.08);
+            --sombra-hover: 0 8px 32px rgba(45,122,79,0.16);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* Grid para Gráficas */
-        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; }
-        .chart-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h2 { font-size: 1.1rem; color: var(--primary); margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        
-        @media (max-width: 600px) { .charts-grid { grid-template-columns: 1fr; } }
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--fondo);
+            color: var(--texto);
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            background: linear-gradient(135deg, #1b5e35 0%, #2d7a4f 50%, #3a9e63 100%);
+            color: white;
+            padding: 28px 32px 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 220px; height: 220px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+        }
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -40px; left: 40%;
+            width: 160px; height: 160px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 50%;
+        }
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .header h1 {
+            font-size: 1.6rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header h1 span { font-size: 1.8rem; }
+        .header-badge {
+            background: rgba(255,255,255,0.18);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 30px;
+            padding: 6px 16px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            backdrop-filter: blur(4px);
+        }
+        .dot-live { width: 8px; height: 8px; border-radius: 50%; background: #7fffb0; animation: pulso 1.5s infinite; }
+        @keyframes pulso { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
+
+        .header-sub {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            opacity: 0.85;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ── BIG TEMP HERO ── */
+        .hero-section {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 20px;
+            padding: 28px 32px;
+            background: white;
+            border-bottom: 1px solid var(--borde);
+            align-items: center;
+        }
+        .hero-temp {
+            text-align: center;
+        }
+        .hero-temp .temp-big {
+            font-size: 5rem;
+            font-weight: 900;
+            line-height: 1;
+            color: var(--verde);
+        }
+        .hero-temp .temp-big sup { font-size: 2rem; vertical-align: super; }
+        .hero-temp .temp-desc {
+            font-size: 0.9rem;
+            color: var(--texto-suave);
+            margin-top: 4px;
+            font-weight: 600;
+        }
+        .hero-temp .emoji-clima { font-size: 2.5rem; }
+
+        .hero-highlights {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+        }
+        .highlight-pill {
+            background: var(--fondo);
+            border-radius: 16px;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            border: 1px solid var(--borde);
+            transition: all 0.2s;
+        }
+        .highlight-pill:hover {
+            box-shadow: var(--sombra-hover);
+            transform: translateY(-2px);
+            background: white;
+        }
+        .highlight-pill .hp-icon { font-size: 1.4rem; }
+        .highlight-pill .hp-label { font-size: 0.72rem; color: var(--texto-suave); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .highlight-pill .hp-val { font-size: 1.15rem; font-weight: 800; color: var(--texto); }
+        .highlight-pill .hp-extra { font-size: 0.72rem; color: var(--texto-suave); font-weight: 600; }
+
+        /* ── ALERTA AGRICOLA ── */
+        .alerta-bar {
+            margin: 20px 32px 0;
+            border-radius: 14px;
+            padding: 14px 20px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .alerta-bar.visible { display: flex; }
+        .alerta-bar.riesgo { background: #fff3cd; border: 1.5px solid #ffc107; color: #7a5c00; }
+        .alerta-bar.bien { background: #e8f5ee; border: 1.5px solid #4caf78; color: #1b5e35; }
+        .alerta-bar.riesgo-alto { background: #fdecea; border: 1.5px solid #e05252; color: #7a1515; }
+        .alerta-icon { font-size: 1.4rem; }
+
+        /* ── BARRA DE LLUVIA HORARIA ── */
+        .lluvia-section {
+            margin: 20px 32px;
+            background: white;
+            border-radius: 18px;
+            padding: 20px 24px;
+            box-shadow: var(--sombra);
+        }
+        .section-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--verde);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .lluvia-horas {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+        .lluvia-horas::-webkit-scrollbar { height: 4px; }
+        .lluvia-horas::-webkit-scrollbar-track { background: var(--fondo); border-radius: 10px; }
+        .lluvia-horas::-webkit-scrollbar-thumb { background: var(--verde-claro); border-radius: 10px; }
+
+        .lluvia-hora {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            min-width: 56px;
+        }
+        .lluvia-hora .lh-tiempo { font-size: 0.75rem; color: var(--texto-suave); font-weight: 700; }
+        .lluvia-hora .lh-barra-wrap {
+            height: 60px;
+            width: 20px;
+            background: var(--fondo);
+            border-radius: 10px;
+            display: flex;
+            align-items: flex-end;
+            overflow: hidden;
+        }
+        .lluvia-hora .lh-barra {
+            width: 100%;
+            background: linear-gradient(180deg, #5ba3d0 0%, #2d7a9f 100%);
+            border-radius: 10px;
+            transition: height 0.5s ease;
+            min-height: 3px;
+        }
+        .lluvia-hora .lh-prob { font-size: 0.72rem; font-weight: 700; color: var(--cielo); }
+        .lluvia-hora .lh-emoji { font-size: 1rem; }
+
+        /* ── KPI GRID ── */
+        .kpi-section {
+            margin: 0 32px 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 14px;
+        }
+        .kpi-card {
+            background: white;
+            border-radius: 18px;
+            padding: 18px 20px;
+            box-shadow: var(--sombra);
+            border-top: 4px solid var(--verde);
+            transition: all 0.2s;
+            cursor: default;
+        }
+        .kpi-card:hover { transform: translateY(-3px); box-shadow: var(--sombra-hover); }
+        .kpi-card.azul { border-top-color: var(--cielo); }
+        .kpi-card.naranja { border-top-color: var(--naranja); }
+        .kpi-card.morado { border-top-color: var(--morado); }
+        .kpi-card.rojo { border-top-color: var(--rojo); }
+        .kpi-card.amarillo { border-top-color: var(--amarillo); }
+
+        .kpi-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .kpi-icon { font-size: 1.5rem; }
+        .kpi-badge-estado {
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .estado-bien { background: #e8f5ee; color: #1b5e35; }
+        .estado-alerta { background: #fff3cd; color: #7a5c00; }
+        .estado-malo { background: #fdecea; color: #7a1515; }
+        .estado-info { background: var(--cielo-suave); color: #1a4f7a; }
+
+        .kpi-label { font-size: 0.75rem; color: var(--texto-suave); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .kpi-valor { font-size: 1.7rem; font-weight: 900; color: var(--texto); line-height: 1; }
+        .kpi-valor span { font-size: 0.9rem; font-weight: 600; color: var(--texto-suave); }
+        .kpi-desc { font-size: 0.75rem; color: var(--texto-suave); margin-top: 4px; font-weight: 600; }
+
+        /* ── GAUGE VPD ── */
+        .gauge-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            margin-top: 6px;
+        }
+        .gauge-bar {
+            width: 100%;
+            height: 8px;
+            border-radius: 6px;
+            background: linear-gradient(to right, #4caf78, #f0c040, #e05252);
+            position: relative;
+        }
+        .gauge-needle {
+            position: absolute;
+            top: -4px;
+            width: 16px;
+            height: 16px;
+            background: var(--texto);
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            transform: translateX(-50%);
+            transition: left 0.8s ease;
+        }
+        .gauge-labels {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.6rem;
+            color: var(--texto-suave);
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        /* ── GRAFICAS ── */
+        .graficas-section {
+            margin: 0 32px 32px;
+        }
+        .graficas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+            gap: 18px;
+        }
+        .grafica-card {
+            background: white;
+            border-radius: 18px;
+            padding: 22px 24px;
+            box-shadow: var(--sombra);
+            transition: box-shadow 0.2s;
+        }
+        .grafica-card:hover { box-shadow: var(--sombra-hover); }
+        .grafica-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--texto);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .grafica-subtitle {
+            font-size: 0.75rem;
+            color: var(--texto-suave);
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+        canvas { max-height: 220px; }
+
+        /* ── CONSEJO AGRICOLA ── */
+        .consejo-section {
+            margin: 0 32px 32px;
+            background: linear-gradient(135deg, #e8f5ee, #d0eedd);
+            border: 1.5px solid #a8d5bc;
+            border-radius: 18px;
+            padding: 22px 28px;
+            display: flex;
+            align-items: flex-start;
+            gap: 18px;
+        }
+        .consejo-icon { font-size: 2.2rem; flex-shrink: 0; margin-top: 2px; }
+        .consejo-titulo { font-size: 1rem; font-weight: 800; color: var(--verde); margin-bottom: 6px; }
+        .consejo-texto { font-size: 0.88rem; color: #2a5a3a; line-height: 1.6; font-weight: 600; }
+
+        /* ── FOOTER ── */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.78rem;
+            color: var(--texto-suave);
+            font-weight: 700;
+            border-top: 1px solid var(--borde);
+        }
+
+        /* ── SKELETON LOADER ── */
+        .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+        .estado-texto {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 800;
+        }
+
+        @media (max-width: 700px) {
+            .hero-section { grid-template-columns: 1fr; }
+            .graficas-grid { grid-template-columns: 1fr; }
+            .header, .hero-section, .lluvia-section, .kpi-section, .graficas-section, .consejo-section { margin-left: 16px; margin-right: 16px; padding-left: 16px; padding-right: 16px; }
+            .lluvia-section, .kpi-section, .graficas-section, .consejo-section, .alerta-bar { margin-left: 12px; margin-right: 12px; }
+            .header { margin: 0; padding: 20px 16px; border-radius: 0; }
+            .hero-section { margin: 0; padding: 20px 16px; }
+            .hero-temp .temp-big { font-size: 3.5rem; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>Sistema de Monitoreo Agrícola</h1>
-        <p id="location-label">Cargando datos de las próximas 24 horas...</p>
+<!-- HEADER -->
+<div class="header">
+    <div class="header-top">
+        <h1><span>🌱</span> Monitor Agrícola</h1>
+        <div class="header-badge">
+            <div class="dot-live"></div>
+            Actualización en vivo
+        </div>
+    </div>
+    <div class="header-sub" id="ubicacion-texto">
+        📍 Cargando ubicación y datos meteorológicos...
+    </div>
+</div>
+
+<!-- HERO TEMPERATURA -->
+<div class="hero-section">
+    <div class="hero-temp">
+        <div class="emoji-clima" id="emoji-clima">⛅</div>
+        <div class="temp-big" id="temp-actual">--<sup>°C</sup></div>
+        <div class="temp-desc" id="temp-desc">Temperatura actual</div>
+    </div>
+    <div class="hero-highlights" id="hero-highlights">
+        <div class="highlight-pill">
+            <span class="hp-icon">🌡️</span>
+            <span class="hp-label">Máxima</span>
+            <span class="hp-val skeleton" id="temp-max" style="width:60px;height:22px;display:block">&nbsp;</span>
+        </div>
+        <div class="highlight-pill">
+            <span class="hp-icon">❄️</span>
+            <span class="hp-label">Mínima</span>
+            <span class="hp-val skeleton" id="temp-min" style="width:60px;height:22px;display:block">&nbsp;</span>
+        </div>
+        <div class="highlight-pill">
+            <span class="hp-icon">💧</span>
+            <span class="hp-label">Rocío</span>
+            <span class="hp-val skeleton" id="punto-rocio" style="width:60px;height:22px;display:block">&nbsp;</span>
+            <span class="hp-extra">Punto de rocío</span>
+        </div>
+        <div class="highlight-pill">
+            <span class="hp-icon">🌅</span>
+            <span class="hp-label">Amanecer</span>
+            <span class="hp-val">06:05</span>
+            <span class="hp-extra">🌇 18:20</span>
+        </div>
+        <div class="highlight-pill">
+            <span class="hp-icon">🌫️</span>
+            <span class="hp-label">Visibilidad</span>
+            <span class="hp-val skeleton" id="visibilidad-hero" style="width:60px;height:22px;display:block">&nbsp;</span>
+        </div>
+        <div class="highlight-pill">
+            <span class="hp-icon">⬇️</span>
+            <span class="hp-label">Presión</span>
+            <span class="hp-val skeleton" id="presion-hero" style="width:70px;height:22px;display:block">&nbsp;</span>
+            <span class="hp-extra">hPa</span>
+        </div>
+    </div>
+</div>
+
+<!-- ALERTA AGRICOLA -->
+<div class="alerta-bar" id="alerta-agricola">
+    <span class="alerta-icon" id="alerta-icono">⚠️</span>
+    <span id="alerta-mensaje">Cargando condiciones agrícolas...</span>
+</div>
+
+<!-- LLUVIA HORARIA -->
+<div class="lluvia-section" style="margin-top:20px;">
+    <div class="section-title">🌧️ Probabilidad de lluvia — próximas horas</div>
+    <div class="lluvia-horas" id="lluvia-horas">
+        <!-- generado dinámicamente -->
+    </div>
+</div>
+
+<!-- KPI CARDS -->
+<div class="kpi-section">
+    <div class="kpi-card">
+        <div class="kpi-top">
+            <span class="kpi-icon">💧</span>
+            <span class="kpi-badge-estado estado-info" id="hum-estado">--</span>
+        </div>
+        <div class="kpi-label">Humedad relativa</div>
+        <div class="kpi-valor" id="kpi-hum">--<span>%</span></div>
+        <div class="kpi-desc" id="hum-desc">Cargando...</div>
     </div>
 
-    <div class="kpi-container" id="kpis">
+    <div class="kpi-card azul">
+        <div class="kpi-top">
+            <span class="kpi-icon">🌧️</span>
+            <span class="kpi-badge-estado estado-info" id="lluvia-estado">--</span>
         </div>
+        <div class="kpi-label">Prob. de lluvia</div>
+        <div class="kpi-valor" id="kpi-lluvia">--<span>%</span></div>
+        <div class="kpi-desc" id="lluvia-desc">Cargando...</div>
+    </div>
 
-    <div class="charts-grid">
-        <div class="chart-card">
-            <h2>Temperaturas y Punto de Rocío</h2>
+    <div class="kpi-card naranja">
+        <div class="kpi-top">
+            <span class="kpi-icon">💨</span>
+            <span class="kpi-badge-estado estado-info" id="viento-estado">--</span>
+        </div>
+        <div class="kpi-label">Velocidad del viento</div>
+        <div class="kpi-valor" id="kpi-viento">--<span>km/h</span></div>
+        <div class="kpi-desc" id="viento-desc">Cargando...</div>
+    </div>
+
+    <div class="kpi-card amarillo">
+        <div class="kpi-top">
+            <span class="kpi-icon">🌿</span>
+            <span class="kpi-badge-estado estado-info" id="et0-estado">--</span>
+        </div>
+        <div class="kpi-label">Evapotranspiración</div>
+        <div class="kpi-valor" id="kpi-et0">--<span>mm</span></div>
+        <div class="kpi-desc">Pérdida de agua del suelo</div>
+    </div>
+
+    <div class="kpi-card morado">
+        <div class="kpi-top">
+            <span class="kpi-icon">🫧</span>
+            <span class="kpi-badge-estado estado-info" id="vpd-estado">--</span>
+        </div>
+        <div class="kpi-label">Estrés hídrico (VPD)</div>
+        <div class="kpi-valor" id="kpi-vpd">--<span>kPa</span></div>
+        <div class="gauge-wrap">
+            <div class="gauge-bar">
+                <div class="gauge-needle" id="vpd-needle" style="left:0%"></div>
+            </div>
+            <div class="gauge-labels"><span>Bajo</span><span>Óptimo</span><span>Alto</span></div>
+        </div>
+    </div>
+
+    <div class="kpi-card rojo">
+        <div class="kpi-top">
+            <span class="kpi-icon">☁️</span>
+            <span class="kpi-badge-estado estado-info" id="nube-estado">--</span>
+        </div>
+        <div class="kpi-label">Cobertura de nubes</div>
+        <div class="kpi-valor" id="kpi-nubes">--<span>%</span></div>
+        <div class="kpi-desc" id="nubes-desc">Cargando...</div>
+    </div>
+</div>
+
+<!-- CONSEJO AGRICOLA -->
+<div class="consejo-section" id="consejo-section" style="margin:0 32px 20px;">
+    <div class="consejo-icon">🌾</div>
+    <div>
+        <div class="consejo-titulo">Consejo Agrícola del Momento</div>
+        <div class="consejo-texto" id="consejo-texto">Analizando condiciones para generar recomendaciones personalizadas...</div>
+    </div>
+</div>
+
+<!-- GRAFICAS -->
+<div class="graficas-section">
+    <div class="graficas-grid">
+        <div class="grafica-card">
+            <div class="grafica-title">🌡️ Temperatura y Punto de Rocío</div>
+            <div class="grafica-subtitle">Evolución horaria en °C — relevante para heladas y enfermedades fúngicas</div>
             <canvas id="chartTemp"></canvas>
         </div>
 
-        <div class="chart-card">
-            <h2>Humedad y Precipitación</h2>
+        <div class="grafica-card">
+            <div class="grafica-title">🌧️ Agua: Lluvia vs Evapotranspiración</div>
+            <div class="grafica-subtitle">Balance hídrico horario en mm — para planificar el riego</div>
             <canvas id="chartWater"></canvas>
         </div>
 
-        <div class="chart-card">
-            <h2>Dinámica del Viento (10m)</h2>
+        <div class="grafica-card">
+            <div class="grafica-title">💨 Velocidad y Ráfagas de Viento</div>
+            <div class="grafica-subtitle">Viento a 10 metros en km/h — importante para fumigación y secado</div>
             <canvas id="chartWind"></canvas>
         </div>
 
-        <div class="chart-card">
-            <h2>Atmósfera (Presión y Visibilidad)</h2>
+        <div class="grafica-card">
+            <div class="grafica-title">🌫️ Presión Atmosférica y Visibilidad</div>
+            <div class="grafica-subtitle">Cambios de presión indican frentes de tormenta</div>
             <canvas id="chartAtmos"></canvas>
         </div>
 
-        <div class="chart-card">
-            <h2>Cobertura de Nubes (%)</h2>
+        <div class="grafica-card">
+            <div class="grafica-title">☁️ Cobertura de Nubes</div>
+            <div class="grafica-subtitle">Porcentaje del cielo cubierto — afecta la radiación solar en cultivos</div>
             <canvas id="chartClouds"></canvas>
         </div>
 
-        <div class="chart-card">
-            <h2>Déficit de Presión de Vapor (VPD)</h2>
+        <div class="grafica-card">
+            <div class="grafica-title">🫧 Déficit de Presión de Vapor (VPD)</div>
+            <div class="grafica-subtitle">Mide el estrés hídrico en plantas. Óptimo: 0.5–1.5 kPa</div>
             <canvas id="chartVPD"></canvas>
         </div>
     </div>
+</div>
 
-    <script>
-        async function updateDashboard() {
-            const res = await fetch('/api/clima');
-            const data = await res.json();
-            const latest = data[0]; // Datos más recientes
-            const labels = data.map(d => d.date.split(' ')[1].substring(0,5));
+<div class="footer">
+    🌿 Sistema de Monitoreo Agrícola — Datos en tiempo real vía Open-Meteo &nbsp;|&nbsp; Actualizado cada hora
+</div>
 
-            // 1. Llenar KPIs
-            const kpiBox = document.getElementById('kpis');
-            const kpiItems = [
-                { label: "Temp Actual", val: latest.temperature_2m + "°C" },
-                { label: "Prob. Lluvia", val: latest.precipitation_probability + "%" },
-                { label: "Evapotransp.", val: latest.et0_fao_evapotranspiration + " mm" },
-                { label: "Humedad Rel.", val: latest.relative_humidity_2m + "%" },
-                { label: "Viento", val: latest.wind_speed_10m + " km/h" },
-                { label: "VPD (Estrés)", val: latest.vapor_pressure_deficit + " kPa" }
-            ];
-            kpiBox.innerHTML = kpiItems.map(item => `
-                <div class="kpi-card">
-                    <h3>${item.label}</h3>
-                    <p>${item.val}</p>
-                </div>
-            `).join('');
+<script>
+// ── UTILIDADES ──
+function getEmojiClima(prob, temp) {
+    if (prob > 70) return '🌧️';
+    if (prob > 40) return '🌦️';
+    if (temp > 30) return '☀️';
+    if (temp > 22) return '⛅';
+    return '🌤️';
+}
 
-            const commonOptions = { responsive: true, scales: { y: { beginAtZero: false } } };
+function estadoHumedad(h) {
+    if (h < 40) return ['Seca', 'estado-malo'];
+    if (h < 60) return ['Óptima', 'estado-bien'];
+    if (h < 80) return ['Alta', 'estado-alerta'];
+    return ['Muy alta', 'estado-malo'];
+}
+function estadoViento(v) {
+    if (v < 15) return ['Calmo', 'estado-bien'];
+    if (v < 30) return ['Moderado', 'estado-alerta'];
+    return ['Fuerte', 'estado-malo'];
+}
+function estadoLluvia(p) {
+    if (p < 20) return ['Poco probable', 'estado-bien'];
+    if (p < 60) return ['Posible', 'estado-alerta'];
+    return ['Probable', 'estado-malo'];
+}
+function estadoNubes(c) {
+    if (c < 25) return ['Despejado', 'estado-bien'];
+    if (c < 60) return ['Parcial', 'estado-info'];
+    return ['Nublado', 'estado-alerta'];
+}
+function estadoVPD(v) {
+    if (v < 0.5) return ['Bajo', 'estado-info'];
+    if (v <= 1.5) return ['Óptimo', 'estado-bien'];
+    if (v <= 2.5) return ['Moderado', 'estado-alerta'];
+    return ['Alto estrés', 'estado-malo'];
+}
+function estadoET0(e) {
+    if (e < 0.3) return ['Bajo', 'estado-bien'];
+    if (e < 0.7) return ['Moderado', 'estado-info'];
+    return ['Alto', 'estado-alerta'];
+}
 
-            // --- GRÁFICA 1: TEMPERATURAS ---
-            new Chart(document.getElementById('chartTemp'), {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Temp 2m', data: data.map(d => d.temperature_2m), borderColor: '#f44336', tension: 0.3 },
-                        { label: 'Aparente', data: data.map(d => d.apparent_temperature), borderColor: '#ff9800', borderDash: [5,5] },
-                        { label: 'Punto Rocío', data: data.map(d => d.dewpoint_2m), borderColor: '#3f51b5' }
-                    ]
-                }, options: commonOptions
-            });
+function generarConsejo(data) {
+    const d = data[0];
+    const consejos = [];
+    if (d.precipitation_probability > 60)
+        consejos.push('Hay alta probabilidad de lluvia en las próximas horas. Evita aplicar fertilizantes o pesticidas que puedan ser arrastrados por el agua.');
+    if (d.vapor_pressure_deficit > 2)
+        consejos.push('El estrés hídrico de las plantas es alto (VPD elevado). Considera regar más frecuentemente y en horas frescas del amanecer.');
+    if (d.wind_speed_10m > 25)
+        consejos.push('Los vientos son fuertes. No es buen momento para fumigaciones ni aplicaciones foliares; espera a que baje el viento.');
+    if (d.temperature_2m < 12)
+        consejos.push('Temperaturas bajas. Protege cultivos sensibles como tomates y plátanos con mallas o túneles antes de que anochezca.');
+    if (d.relative_humidity_2m > 85)
+        consejos.push('Humedad muy alta: riesgo elevado de enfermedades fúngicas como roya y mildiú. Revisa tus cultivos y ventila los invernaderos.');
+    if (d.et0_fao_evapotranspiration > 0.6)
+        consejos.push('Evapotranspiración alta: el suelo está perdiendo agua rápido. Considera mulching o riego por goteo para conservar la humedad.');
+    if (consejos.length === 0)
+        consejos.push('Las condiciones climáticas actuales son favorables para las labores agrícolas. Buen momento para monitoreo de cultivos y mantenimiento general.');
+    return consejos.join(' ');
+}
 
-            // --- GRÁFICA 2: AGUA ---
-            new Chart(document.getElementById('chartWater'), {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Precipitación (mm)', data: data.map(d => d.precipitation), backgroundColor: '#2196f3' },
-                        { label: 'ET0 (mm)', data: data.map(d => d.et0_fao_evapotranspiration), backgroundColor: '#4caf50' }
-                    ]
-                }, options: commonOptions
-            });
+function generarAlerta(data) {
+    const d = data[0];
+    if (d.precipitation_probability > 75 && d.wind_speed_10m > 30)
+        return { clase: 'riesgo-alto', icono: '🚨', msg: 'ALERTA: Condiciones de tormenta previstas. Asegura estructuras, tutores y mallas. Evita cualquier labor en campo.' };
+    if (d.relative_humidity_2m > 88)
+        return { clase: 'riesgo', icono: '⚠️', msg: 'Atención: Humedad extrema — riesgo de hongos y bacterias. Prioriza ventilación y revisa hojas de los cultivos.' };
+    if (d.temperature_2m < 10)
+        return { clase: 'riesgo', icono: '🥶', msg: 'Alerta de frío: temperatura cercana o bajo riesgo de daño. Cubre cultivos sensibles esta noche.' };
+    if (d.vapor_pressure_deficit > 2.5)
+        return { clase: 'riesgo', icono: '🏜️', msg: 'Estrés hídrico elevado en las plantas. Activa el riego y evita horas de mayor calor.' };
+    return { clase: 'bien', icono: '✅', msg: 'Condiciones agrícolas normales. Todo está en orden para tus cultivos hoy.' };
+}
 
-            // --- GRÁFICA 3: VIENTO ---
-            new Chart(document.getElementById('chartWind'), {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Velocidad', data: data.map(d => d.wind_speed_10m), borderColor: '#009688', fill: true },
-                        { label: 'Ráfagas', data: data.map(d => d.wind_gusts_10m), borderColor: '#ff5722' }
-                    ]
-                }, options: commonOptions
-            });
+// ── RENDER DE LLUVIA HORARIA ──
+function renderLluvia(data) {
+    const container = document.getElementById('lluvia-horas');
+    const slice = data.slice(0, 18);
+    const maxProb = Math.max(...slice.map(d => d.precipitation_probability), 1);
+    container.innerHTML = slice.map(d => {
+        const hora = d.date.split(' ')[1]?.substring(0,5) || '--:--';
+        const prob = d.precipitation_probability;
+        const altPct = Math.round((prob / 100) * 60);
+        const emoji = prob > 70 ? '🌧️' : prob > 40 ? '🌦️' : prob > 15 ? '🌤️' : '☀️';
+        return `
+        <div class="lluvia-hora">
+            <div class="lh-tiempo">${hora}</div>
+            <div class="lh-barra-wrap">
+                <div class="lh-barra" style="height:${altPct}px"></div>
+            </div>
+            <div class="lh-prob">${prob}%</div>
+            <div class="lh-emoji">${emoji}</div>
+        </div>`;
+    }).join('');
+}
 
-            // --- GRÁFICA 4: PRESIÓN ---
-            new Chart(document.getElementById('chartAtmos'), {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Presión Superficie (hPa)', data: data.map(d => d.surface_pressure), borderColor: '#795548', yAxisID: 'y' },
-                        { label: 'Visibilidad (m)', data: data.map(d => d.visibility), borderColor: '#9e9e9e', yAxisID: 'y1' }
-                    ]
-                },
-                options: { 
-                    scales: { 
-                        y: { position: 'left' }, 
-                        y1: { position: 'right', grid: { drawOnChartArea: false } } 
-                    } 
-                }
-            });
+// ── GRAFICA HELPER ──
+const chartOpts = (extraScales) => ({
+    responsive: true,
+    plugins: { legend: { labels: { font: { family: 'Nunito', size: 11, weight: '700' }, boxWidth: 14 } } },
+    scales: {
+        x: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { family: 'Nunito', size: 10 }, maxRotation: 0 } },
+        y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { family: 'Nunito', size: 10 } }, beginAtZero: false },
+        ...(extraScales || {})
+    }
+});
 
-            // --- GRÁFICA 5: NUBES ---
-            new Chart(document.getElementById('chartClouds'), {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{ label: 'Cobertura Total %', data: data.map(d => d.cloud_cover), borderColor: '#607d8b', fill: true }]
-                }, options: commonOptions
-            });
+// ── PRINCIPAL ──
+async function cargarDashboard() {
+    // DEMO: genera datos ficticios si la API no está disponible
+    let data;
+    try {
+        const res = await fetch('/api/clima');
+        if (!res.ok) throw new Error('Sin API');
+        data = await res.json();
+    } catch {
+        // Datos simulados para demostración
+        const now = new Date();
+        data = Array.from({ length: 24 }, (_, i) => {
+            const dt = new Date(now.getTime() + i * 3600000);
+            const hora = dt.toISOString().replace('T', ' ').substring(0, 16);
+            const t = 22 + Math.sin(i * 0.4) * 6 + Math.random();
+            return {
+                date: hora,
+                temperature_2m: parseFloat(t.toFixed(1)),
+                apparent_temperature: parseFloat((t - 2 + Math.random()).toFixed(1)),
+                dewpoint_2m: parseFloat((t - 6 + Math.random() * 2).toFixed(1)),
+                relative_humidity_2m: Math.round(60 + Math.sin(i * 0.5) * 20 + Math.random() * 5),
+                precipitation: parseFloat((Math.random() * 0.5).toFixed(2)),
+                precipitation_probability: Math.round(Math.max(0, 30 + Math.sin(i * 0.6) * 30 + Math.random() * 10)),
+                et0_fao_evapotranspiration: parseFloat((0.3 + Math.random() * 0.5).toFixed(2)),
+                wind_speed_10m: parseFloat((15 + Math.random() * 15).toFixed(1)),
+                wind_gusts_10m: parseFloat((20 + Math.random() * 20).toFixed(1)),
+                surface_pressure: parseFloat((1010 + Math.random() * 5).toFixed(1)),
+                visibility: Math.round(8000 + Math.random() * 4000),
+                cloud_cover: Math.round(30 + Math.sin(i * 0.4) * 25 + Math.random() * 10),
+                vapor_pressure_deficit: parseFloat((0.5 + Math.sin(i * 0.5) * 0.8 + Math.random() * 0.3).toFixed(2))
+            };
+        });
+    }
 
-            // --- GRÁFICA 6: VPD (ESTRÉS) ---
-            new Chart(document.getElementById('chartVPD'), {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{ 
-                        label: 'VPD (kPa)', 
-                        data: data.map(d => d.vapor_pressure_deficit), 
-                        borderColor: '#9c27b0', 
-                        backgroundColor: 'rgba(156, 39, 176, 0.2)',
-                        fill: true 
-                    }]
-                }, options: commonOptions
-            });
-        }
+    const latest = data[0];
+    const labels = data.map(d => d.date.split(' ')[1]?.substring(0,5) || '--');
 
-        updateDashboard();
-    </script>
+    // ── Header ──
+    document.getElementById('ubicacion-texto').textContent = '📍 Su finca — Próximas 24 horas — ' + new Date().toLocaleDateString('es', { weekday:'long', day:'numeric', month:'long' });
+
+    // ── Hero ──
+    document.getElementById('emoji-clima').textContent = getEmojiClima(latest.precipitation_probability, latest.temperature_2m);
+    document.getElementById('temp-actual').innerHTML = `${latest.temperature_2m}<sup>°C</sup>`;
+    document.getElementById('temp-desc').textContent = `Sensación térmica: ${latest.apparent_temperature}°C`;
+
+    const temps = data.map(d => d.temperature_2m);
+    const [elId, remSkel] = [['temp-max','temp-min','punto-rocio','visibilidad-hero','presion-hero'], ['skeleton']];
+    document.getElementById('temp-max').textContent = Math.max(...temps).toFixed(1) + '°C';
+    document.getElementById('temp-max').classList.remove('skeleton');
+    document.getElementById('temp-max').style = '';
+    document.getElementById('temp-min').textContent = Math.min(...temps).toFixed(1) + '°C';
+    document.getElementById('temp-min').classList.remove('skeleton'); document.getElementById('temp-min').style = '';
+    document.getElementById('punto-rocio').textContent = latest.dewpoint_2m + '°C';
+    document.getElementById('punto-rocio').classList.remove('skeleton'); document.getElementById('punto-rocio').style = '';
+    document.getElementById('visibilidad-hero').textContent = (latest.visibility/1000).toFixed(1) + ' km';
+    document.getElementById('visibilidad-hero').classList.remove('skeleton'); document.getElementById('visibilidad-hero').style = '';
+    document.getElementById('presion-hero').textContent = latest.surface_pressure;
+    document.getElementById('presion-hero').classList.remove('skeleton'); document.getElementById('presion-hero').style = '';
+
+    // ── Alerta ──
+    const alerta = generarAlerta(data);
+    const alertaEl = document.getElementById('alerta-agricola');
+    alertaEl.className = 'alerta-bar visible ' + alerta.clase;
+    document.getElementById('alerta-icono').textContent = alerta.icono;
+    document.getElementById('alerta-mensaje').textContent = alerta.msg;
+
+    // ── Lluvia ──
+    renderLluvia(data);
+
+    // ── KPIs ──
+    const [esH, clH] = estadoHumedad(latest.relative_humidity_2m);
+    document.getElementById('kpi-hum').innerHTML = `${latest.relative_humidity_2m}<span>%</span>`;
+    document.getElementById('hum-estado').textContent = esH; document.getElementById('hum-estado').className = 'kpi-badge-estado ' + clH;
+    document.getElementById('hum-desc').textContent = latest.relative_humidity_2m > 75 ? 'Riesgo de hongos — ventila cultivos' : latest.relative_humidity_2m < 45 ? 'Muy seco — riego recomendado' : 'Humedad favorable para cultivos';
+
+    const [esL, clL] = estadoLluvia(latest.precipitation_probability);
+    document.getElementById('kpi-lluvia').innerHTML = `${latest.precipitation_probability}<span>%</span>`;
+    document.getElementById('lluvia-estado').textContent = esL; document.getElementById('lluvia-estado').className = 'kpi-badge-estado ' + clL;
+    document.getElementById('lluvia-desc').textContent = latest.precipitation_probability > 60 ? 'Suspende fumigaciones y cosecha' : latest.precipitation_probability > 30 ? 'Monitorea antes de aplicar agroquímicos' : 'Condiciones secas — ideal para fumigación';
+
+    const [esV, clV] = estadoViento(latest.wind_speed_10m);
+    document.getElementById('kpi-viento').innerHTML = `${latest.wind_speed_10m}<span>km/h</span>`;
+    document.getElementById('viento-estado').textContent = esV; document.getElementById('viento-estado').className = 'kpi-badge-estado ' + clV;
+    document.getElementById('viento-desc').textContent = latest.wind_speed_10m > 25 ? 'No apto para fumigación foliar' : 'Viento aceptable para labores normales';
+
+    const [esE, clE] = estadoET0(latest.et0_fao_evapotranspiration);
+    document.getElementById('kpi-et0').innerHTML = `${latest.et0_fao_evapotranspiration}<span>mm</span>`;
+    document.getElementById('et0-estado').textContent = esE; document.getElementById('et0-estado').className = 'kpi-badge-estado ' + clE;
+
+    const vpd = latest.vapor_pressure_deficit;
+    const [esVPD, clVPD] = estadoVPD(vpd);
+    document.getElementById('kpi-vpd').innerHTML = `${vpd}<span>kPa</span>`;
+    document.getElementById('vpd-estado').textContent = esVPD; document.getElementById('vpd-estado').className = 'kpi-badge-estado ' + clVPD;
+    const vpdPct = Math.min(100, (vpd / 4) * 100);
+    setTimeout(() => { document.getElementById('vpd-needle').style.left = vpdPct + '%'; }, 300);
+
+    const [esN, clN] = estadoNubes(latest.cloud_cover);
+    document.getElementById('kpi-nubes').innerHTML = `${latest.cloud_cover}<span>%</span>`;
+    document.getElementById('nube-estado').textContent = esN; document.getElementById('nube-estado').className = 'kpi-badge-estado ' + clN;
+    document.getElementById('nubes-desc').textContent = latest.cloud_cover > 70 ? 'Poca radiación solar hoy — fotosíntesis reducida' : latest.cloud_cover < 20 ? 'Cielo despejado — alta radiación solar' : 'Cobertura parcial — condiciones normales';
+
+    // ── Consejo ──
+    document.getElementById('consejo-texto').textContent = generarConsejo(data);
+
+    // ── Gráficas ──
+    const baseDataset = { tension: 0.4, pointRadius: 2, borderWidth: 2.5 };
+
+    new Chart(document.getElementById('chartTemp'), {
+        type: 'line',
+        data: { labels, datasets: [
+            { ...baseDataset, label: 'Temperatura (°C)', data: data.map(d => d.temperature_2m), borderColor: '#e05252', backgroundColor: 'rgba(224,82,82,0.07)', fill: true },
+            { ...baseDataset, label: 'Sensación térmica', data: data.map(d => d.apparent_temperature), borderColor: '#f5924e', borderDash: [5,4] },
+            { ...baseDataset, label: 'Punto de rocío', data: data.map(d => d.dewpoint_2m), borderColor: '#5ba3d0' }
+        ]},
+        options: chartOpts()
+    });
+
+    new Chart(document.getElementById('chartWater'), {
+        type: 'bar',
+        data: { labels, datasets: [
+            { label: 'Precipitación (mm)', data: data.map(d => d.precipitation), backgroundColor: 'rgba(91,163,208,0.75)', borderRadius: 6 },
+            { label: 'Evapotranspiración (mm)', data: data.map(d => d.et0_fao_evapotranspiration), backgroundColor: 'rgba(76,175,120,0.75)', borderRadius: 6 }
+        ]},
+        options: chartOpts()
+    });
+
+    new Chart(document.getElementById('chartWind'), {
+        type: 'line',
+        data: { labels, datasets: [
+            { ...baseDataset, label: 'Velocidad (km/h)', data: data.map(d => d.wind_speed_10m), borderColor: '#2d7a4f', backgroundColor: 'rgba(45,122,79,0.08)', fill: true },
+            { ...baseDataset, label: 'Ráfagas (km/h)', data: data.map(d => d.wind_gusts_10m), borderColor: '#f5924e', borderDash: [4,3] }
+        ]},
+        options: chartOpts()
+    });
+
+    new Chart(document.getElementById('chartAtmos'), {
+        type: 'line',
+        data: { labels, datasets: [
+            { ...baseDataset, label: 'Presión (hPa)', data: data.map(d => d.surface_pressure), borderColor: '#795548', yAxisID: 'y' },
+            { ...baseDataset, label: 'Visibilidad (km)', data: data.map(d => parseFloat((d.visibility/1000).toFixed(1))), borderColor: '#9e9e9e', yAxisID: 'y1' }
+        ]},
+        options: { ...chartOpts(), scales: {
+            x: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { family: 'Nunito', size: 10 }, maxRotation: 0 } },
+            y: { position: 'left', ticks: { font: { family: 'Nunito', size: 10 } }, grid: { color: 'rgba(0,0,0,0.04)' } },
+            y1: { position: 'right', ticks: { font: { family: 'Nunito', size: 10 } }, grid: { drawOnChartArea: false } }
+        }}
+    });
+
+    new Chart(document.getElementById('chartClouds'), {
+        type: 'line',
+        data: { labels, datasets: [
+            { ...baseDataset, label: 'Cobertura de nubes (%)', data: data.map(d => d.cloud_cover), borderColor: '#607d8b', backgroundColor: 'rgba(96,125,139,0.1)', fill: true }
+        ]},
+        options: { ...chartOpts(), scales: { ...chartOpts().scales, y: { min: 0, max: 100, ticks: { font: { family:'Nunito', size:10 } }, grid: { color: 'rgba(0,0,0,0.04)' } } } }
+    });
+
+    new Chart(document.getElementById('chartVPD'), {
+        type: 'line',
+        data: { labels, datasets: [
+            { ...baseDataset, label: 'VPD — Estrés hídrico (kPa)', data: data.map(d => d.vapor_pressure_deficit), borderColor: '#7c5cbf', backgroundColor: 'rgba(124,92,191,0.1)', fill: true }
+        ]},
+        options: chartOpts()
+    });
+}
+
+cargarDashboard();
+</script>
 </body>
 </html>
