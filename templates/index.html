@@ -440,9 +440,39 @@
         </div>
         <div class="highlight-pill">
             <span class="hp-icon">⬇️</span>
-            <span class="hp-label">Presión</span>
+            <span class="hp-label">Presión Sup.</span>
             <span class="hp-val skeleton" id="presion-hero" style="width:70px;height:22px;display:block">&nbsp;</span>
             <span class="hp-extra">hPa</span>
+        </div>
+        <div class="highlight-pill">
+            <span class="hp-icon">🌧️</span>
+            <span class="hp-label">Lluvia</span>
+            <span class="hp-val skeleton" id="lluvia-total" style="width:60px;height:22px;display:block">&nbsp;</span>
+            <span class="hp-extra">mm (lluvia+chubascos)</span>
+        </div>
+        <div class="highlight-pill">
+            <span class="hp-icon">❄️</span>
+            <span class="hp-label">Nieve</span>
+            <span class="hp-val skeleton" id="nieve-total" style="width:60px;height:22px;display:block">&nbsp;</span>
+            <span class="hp-extra">cm</span>
+        </div>
+        <div class="highlight-pill">
+            <span class="hp-icon">🧭</span>
+            <span class="hp-label">Dir. Viento</span>
+            <span class="hp-val skeleton" id="dir-viento" style="width:60px;height:22px;display:block">&nbsp;</span>
+            <span class="hp-extra">° grados</span>
+        </div>
+        <div class="highlight-pill">
+            <span class="hp-icon">📈</span>
+            <span class="hp-label">Presión MSL</span>
+            <span class="hp-val skeleton" id="presion-msl" style="width:60px;height:22px;display:block">&nbsp;</span>
+            <span class="hp-extra">hPa</span>
+        </div>
+        <div class="highlight-pill">
+            <span class="hp-icon">🌱</span>
+            <span class="hp-label">Evapotransp.</span>
+            <span class="hp-val skeleton" id="evapo" style="width:60px;height:22px;display:block">&nbsp;</span>
+            <span class="hp-extra">mm</span>
         </div>
     </div>
 </div>
@@ -721,7 +751,15 @@ async function cargarDashboard() {
                 surface_pressure: parseFloat((1010 + Math.random() * 5).toFixed(1)),
                 visibility: Math.round(8000 + Math.random() * 4000),
                 cloud_cover: Math.round(30 + Math.sin(i * 0.4) * 25 + Math.random() * 10),
-                vapor_pressure_deficit: parseFloat((0.5 + Math.sin(i * 0.5) * 0.8 + Math.random() * 0.3).toFixed(2))
+                vapor_pressure_deficit: parseFloat((0.5 + Math.sin(i * 0.5) * 0.8 + Math.random() * 0.3).toFixed(2)),
+                rain: parseFloat((Math.random() * 0.5).toFixed(2)),
+                showers: parseFloat((Math.random() * 0.2).toFixed(2)),
+                snowfall: 0,
+                snow_depth: 0,
+                weather_code: 1,
+                pressure_msl: parseFloat((1010 + Math.random() * 5).toFixed(1)),
+                evapotranspiration: parseFloat((0.2 + Math.random() * 0.3).toFixed(2)),
+                wind_direction_10m: Math.round(Math.random() * 360)
             };
         });
     }
@@ -750,6 +788,21 @@ async function cargarDashboard() {
     document.getElementById('visibilidad-hero').classList.remove('skeleton'); document.getElementById('visibilidad-hero').style = '';
     document.getElementById('presion-hero').textContent = latest.surface_pressure;
     document.getElementById('presion-hero').classList.remove('skeleton'); document.getElementById('presion-hero').style = '';
+
+    document.getElementById('lluvia-total').textContent = (latest.rain + latest.showers).toFixed(1) + ' mm';
+    document.getElementById('lluvia-total').classList.remove('skeleton'); document.getElementById('lluvia-total').style = '';
+
+    document.getElementById('nieve-total').textContent = (latest.snowfall + latest.snow_depth).toFixed(1) + ' cm';
+    document.getElementById('nieve-total').classList.remove('skeleton'); document.getElementById('nieve-total').style = '';
+
+    document.getElementById('dir-viento').textContent = latest.wind_direction_10m + '°';
+    document.getElementById('dir-viento').classList.remove('skeleton'); document.getElementById('dir-viento').style = '';
+
+    document.getElementById('presion-msl').textContent = latest.pressure_msl;
+    document.getElementById('presion-msl').classList.remove('skeleton'); document.getElementById('presion-msl').style = '';
+
+    document.getElementById('evapo').textContent = latest.evapotranspiration + ' mm';
+    document.getElementById('evapo').classList.remove('skeleton'); document.getElementById('evapo').style = '';
 
     // ── Alerta ──
     const alerta = generarAlerta(data);
