@@ -1,0 +1,7 @@
+# Bases de datos y caché de SQLite
+*.sqlite
+*.db
+
+# Carpetas de caché de Python
+__pycache__/
+*.py[cod]
