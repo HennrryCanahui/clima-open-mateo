@@ -49,9 +49,9 @@ def generar_datos_esp32():
         "uv_index":        estado["uv_index"],
         "lluvia":          int(lluvia),  # cast explícito por seguridad
         "luz_lux":         estado["luz_lux"],
-        "bomba_1": 1 if estado["humedad_suelo_1"] < 30 else 0,
-        "bomba_2": 1 if estado["humedad_suelo_2"] < 30 else 0,
-        "bomba_3": 1 if estado["humedad_suelo_3"] < 30 else 0,
+        "bomba_1": 1, # if estado["humedad_suelo_1"] < 30 else 0,
+        "bomba_2": 1, # if estado["humedad_suelo_2"] < 30 else 0,
+        "bomba_3": 1, #if estado["humedad_suelo_3"] < 30 else 0,
     }
 
 def enviar_datos():
