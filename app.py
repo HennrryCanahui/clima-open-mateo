@@ -5,8 +5,7 @@ from functools import wraps
 
 app = Flask(__name__)
 
-# --- Seguridad ---
-API_TOKEN = "696969696969"  # Cambia esto por un token seguro
+API_TOKEN = "696969696969"
 
 def require_token(f):
     @wraps(f)
@@ -17,8 +16,6 @@ def require_token(f):
         return f(*args, **kwargs)
     return decorated
 
-
-# --- Base de datos ---
 def get_db_connection():
     conn = sqlite3.connect('monitoreo_agricola.db')
     conn.row_factory = sqlite3.Row
@@ -31,24 +28,16 @@ def init_db():
         CREATE TABLE IF NOT EXISTS sensores_esp32 (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp TEXT NOT NULL,
-
-            -- Humedad del suelo (3 sensores, valor 0-100%)
             humedad_suelo_1 REAL,
             humedad_suelo_2 REAL,
             humedad_suelo_3 REAL,
-
-            -- Temperatura (2 sensores digitales)
             temperatura_1 REAL,
             temperatura_2 REAL,
-
-            -- Bombas de agua (estado: 0=apagada, 1=encendida)
             bomba_1 INTEGER,
             bomba_2 INTEGER,
             bomba_3 INTEGER,
-
-            -- Sensores ambientales
             uv_index REAL,
-            lluvia INTEGER,   -- 0=sin lluvia, 1=lluvia detectada
+            lluvia INTEGER,
             luz_lux REAL
         )
     ''')
@@ -64,7 +53,6 @@ def get_clima_data():
     return [dict(row) for row in rows][::-1]
 
 def get_sensores_data():
-    """Retorna los últimos 50 registros de sensores."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM sensores_esp32 ORDER BY timestamp DESC LIMIT 50")
@@ -72,14 +60,10 @@ def get_sensores_data():
     conn.close()
     return [dict(row) for row in rows][::-1]
 
-
-# --- Rutas públicas ---
 @app.route('/')
 def index():
     return render_template('index.html')
 
-
-# --- Rutas protegidas ---
 @app.route('/api/clima')
 @require_token
 def api_clima():
@@ -89,38 +73,24 @@ def api_clima():
 @app.route('/api/sensores', methods=['POST'])
 @require_token
 def recibir_sensores():
-    """
-    Recibe el JSON del ESP32 y lo guarda en la base de datos.
-
-    Ejemplo del JSON esperado:
-    {
-        "humedad_suelo_1": 65.3,
-        "humedad_suelo_2": 70.1,
-        "humedad_suelo_3": 58.9,
-        "temperatura_1": 24.5,
-        "temperatura_2": 25.1,
-        "bomba_1": 0,
-        "bomba_2": 1,
-        "bomba_3": 0,
-        "uv_index": 3.2,
-        "lluvia": 0,
-        "luz_lux": 1200.5
-    }
-    """
     if not request.is_json:
         return jsonify({"error": "El contenido debe ser JSON"}), 400
 
     data = request.get_json()
 
-    # Campos permitidos con sus valores por defecto (None si no vienen)
-    campos = [
-        "humedad_suelo_1", "humedad_suelo_2", "humedad_suelo_3",
-        "temperatura_1", "temperatura_2",
-        "bomba_1", "bomba_2", "bomba_3",
-        "uv_index", "lluvia", "luz_lux"
-    ]
+    campos_float = ["humedad_suelo_1", "humedad_suelo_2", "humedad_suelo_3",
+                    "temperatura_1", "temperatura_2", "uv_index", "luz_lux"]
+    campos_int   = ["bomba_1", "bomba_2", "bomba_3", "lluvia"]
 
-    valores = {campo: data.get(campo) for campo in campos}
+    valores = {}
+    for campo in campos_float:
+        val = data.get(campo)
+        valores[campo] = float(val) if val is not None else None
+
+    for campo in campos_int:
+        val = data.get(campo)
+        valores[campo] = int(val) if val is not None else None  # cast explícito, evita que bool/None rompa SQLite
+
     valores["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
@@ -150,11 +120,9 @@ def recibir_sensores():
 @app.route('/api/sensores', methods=['GET'])
 @require_token
 def obtener_sensores():
-    """Retorna los últimos registros de sensores para el dashboard."""
     data = get_sensores_data()
     return jsonify(data)
 
-
 if __name__ == '__main__':
-    init_db()  # Crea las tablas si no existen al iniciar
+    init_db()
     app.run(debug=True, host='0.0.0.0', port=5000)
